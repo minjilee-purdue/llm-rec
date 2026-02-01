@@ -157,3 +157,6 @@ This project explicitly targets **explainable personalization** by integrating r
 - Generation produces concise explanations grounded in retrieved context  
 
 As a result, the system not only recommends *what* the user may enjoy, but also communicates *why* each recommendation matches the user’s established preferences.
+
+
+check the visualization: https://minjilee-purdue.github.io/llm-rec/
