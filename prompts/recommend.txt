@@ -1,0 +1,108 @@
+[SYSTEM]
+You are a media recommendation engine. Based on the user's watch history and ratings,
+recommend new titles they are likely to enjoy.
+
+Rules:
+- Recommend titles the user has NOT already watched.
+- For each recommendation, provide:
+  1. title
+  2. type (tv_show, movie, etc.)
+  3. predicted_rating (very_liked / liked / okay_neutral / disliked)
+  4. reasoning: why this matches the user's taste profile
+- Output as a JSON array. No extra text.
+
+[USER WATCH PROFILE]
+
+STRONG POSITIVE (score 8–10):
+- Mouse (thriller, dark, cat-and-mouse) — score 9
+- D.P. (military, drama, social_commentary) — score 9
+- Misaeng (Incomplete Life) (workplace, drama, slice_of_life) — score 9
+- Sangyeon and Eunjung (romance, drama, emotional) — score 9
+- Stove League (sports, drama, underdog) — score 9
+- Mr. Sunshine (historical, war, romance, emotional) — score 9
+- Reply 1988 (nostalgia, slice_of_life, romance) — score 9
+- Our Unwritten Seoul (romance, drama, emotional) — score 8
+- Karma (drama, emotional) — score 8
+- Stranger Things (sci-fi, mystery, horror, coming_of_age) — score 9
+- Dune (sci-fi, epic, political) — score 9
+- Arcane (animation, action, emotional, dark) — score 9
+- Devil's Plan (Season 1) (reality, competition, strategy) — score 9
+- Culinary Class Wars (reality, competition, food) — score 8
+- Whiplash (drama, music, intense, psychological) — score 9
+- Parasite (thriller, dark, social_commentary) — score 10
+- Everything Everywhere All at Once (sci-fi, action, emotional, philosophical) — score 9
+- The Devil Wears Prada (comedy, drama, workplace) — score 8
+- Zootopia (animation, adventure, social_commentary) — score 10
+- Coco (animation, emotional, family, cultural) — score 10
+- Toy Story (animation, adventure, emotional) — score 9
+- Love Door Next (romance, drama) — score 9
+- Solo but Wanna Date (reality, dating, relatable) — score 8
+- Hello My Twenties (slice_of_life, coming_of_age, romance) — score 8
+
+MODERATE POSITIVE (score 6–7):
+- My Mister (drama, emotional, slice_of_life) — score 7
+- Mask Girl (dark, psychological, social_commentary) — score 7
+- My Liberation Notes (drama, emotional, slice_of_life) — score 6
+- Something in the Rain (romance, drama, emotional) — score 6
+- Misty (thriller, mystery, psychological) — score 7
+- Extraordinary Attorney Woo (drama, legal, lighthearted) — score 6
+- Crime Scene Zero (reality, competition, mystery) — score 7
+- Love After Divorce (reality, dating) — score 6
+- The Talented Mr. Ripley (thriller, psychological, dark) — score 7
+- Little Women (drama, historical, emotional) — score 7
+- Boots (drama, military, romance) — score 6
+- Our Beloved Summer (romance, slice_of_life, lighthearted) — score 6
+- The Silent Sea (sci-fi, thriller, dark) — score 7
+- Signal (thriller, mystery, emotional) — score 7
+- K-pop Demon Hunters (fantasy, action, supernatural) — score 7
+- Weak Hero Class (action, school, dark) — score 7
+- Interstellar (sci-fi, emotional, epic) — score 7
+- Gravity (sci-fi, thriller, survival) — score 7
+- A Killer Paradox (thriller, mystery, dark) — score 6
+- Inside Out (animation, emotional, psychological) — score 7
+- Inside Out 2 (animation, emotional, psychological) — score 6
+
+NEUTRAL (score 4–5):
+- My ID is Gangnam Beauty (romance, lighthearted) — score 5
+- Melo Movie (romance, drama) — score 4
+- The King (political, romance) — score 4
+- My Love from the Star (romance, fantasy, lighthearted) — score 5
+- The Glory (thriller, revenge, dark) — score 5
+- Squid Game (thriller, survival, dark) — score 5
+- When Life Gives You Tangerines (romance, historical) — score 4
+- Crash Landing on You (romance, drama, lighthearted) — score 5
+- Single's Inferno (reality, dating) — score 4
+- K Food Meets J Food (reality, food, travel) — score 4
+- As You Stood By (romance, drama) — score 4
+- Secret Garden (romance, fantasy, lighthearted) — score 5
+- Abyss (romance, fantasy, lighthearted) — score 4
+- His & Hers (romance, drama) — score 4
+- 3 Body Problem (sci-fi, epic, dark) — score 5
+- Avatar (sci-fi, action, epic) — score 5
+- Wicked 1 (musical, fantasy) — score 4
+- Ratatouille (animation, comedy, food) — score 5
+- La La Land (musical, romance, drama) — score 5
+- Up (animation, emotional, adventure) — score 5
+- Spider-Man (superhero, action) — score 4
+- Batman (superhero, action, dark) — score 4
+
+NEGATIVE (score 1–2 — avoid recommending similar):
+- When the Stars Gossip (romance, lighthearted) — score 2
+- Doona (romance, drama) — score 2
+- Can This Love Be Translated (romance, lighthearted) — score 2
+- Hometown Cha Cha Cha (romance, lighthearted) — score 2
+- Nevertheless (romance, drama) — score 2
+- Gyeongseong Creature (historical, horror, action) — score 1
+- Beef (dark, comedy, social_commentary) — score 2
+- Moving (superhero, action, fantasy) — score 2
+- Devil's Plan (Season 2) (reality, competition, strategy) — score 1
+
+Dominant taste patterns:
+- Prefers psychological depth and dark narratives over lighthearted romance
+- Strong affinity for emotionally grounded storytelling
+- Enjoys structured competition-format reality TV
+- Warm animation (Pixar-style) is a separate strong positive cluster
+- Lighthearted romance-only K-dramas are a consistent negative signal
+
+[INSTRUCTION]
+Recommend 5 titles the user has not watched. Output as a JSON array only.
