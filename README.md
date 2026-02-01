@@ -159,4 +159,8 @@ This project explicitly targets **explainable personalization** by integrating r
 As a result, the system not only recommends *what* the user may enjoy, but also communicates *why* each recommendation matches the user’s established preferences.
 
 
+<img width="657" height="437" alt="data_example_1" src="https://github.com/user-attachments/assets/41ab961d-cc21-4a80-ae97-87d8d42e4ed9" />
+
+<img width="656" height="554" alt="data_example_2" src="https://github.com/user-attachments/assets/21804f20-67bc-4a53-822b-16b42883e949" />
+
 check the visualization: https://minjilee-purdue.github.io/llm-rec/
