@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Genre Flow — llm-rec</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background: #0a0e1a;
+    color: #e2e8f0;
+    font-family: 'Georgia', serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #f1f5f9;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 28px;
+    text-align: center;
+    max-width: 520px;
+  }
+
+  svg { width: 100%; max-width: 740px; }
+
+  .node-label-left  { fill: #cbd5e1; font-size: 11px; font-family: 'Georgia', serif; text-anchor: end; }
+  .node-label-right { fill: #cbd5e1; font-size: 11.5px; font-family: 'Georgia', serif; font-weight: 600; text-anchor: start; }
+  .flow-path { transition: opacity 0.2s; cursor: pointer; }
+  .flow-path:hover { opacity: 1 !important; }
+  .tooltip-box { fill: #1a1f35; stroke: #334155; stroke-width: 1; }
+  .tooltip-title { fill: #f1f5f9; font-size: 11px; font-family: 'Georgia', serif; font-weight: 600; }
+  .tooltip-line  { fill: #cbd5e1; font-size: 10px; font-family: 'Georgia', serif; }
+</style>
+</head>
+<body>
+
+<h1>Genre → Rating Flow</h1>
+<p class="subtitle">
+  How each genre distributes across rating buckets.
+  Thicker flows = more titles. Hover a flow to inspect.
+  Green flows land in <strong style="color:#22c55e">Very Liked</strong>,
+  red flows land in <strong style="color:#ef4444">Disliked</strong>.
+</p>
+
+<svg id="sankey" viewBox="0 0 740 520"></svg>
+
+<script>
+// ─── Data ──────────────────────────────────────────────────────────────────
+const GENRES = [
+  "romance","drama","emotional","dark","thriller",
+  "lighthearted","action","sci-fi","animation","reality",
+  "slice_of_life","psychological"
+];
+
+// genre → { bucket: count }
+const FLOWS = {
+  romance:        { very_liked:6, liked:3, okay_neutral:11, disliked:5 },
+  drama:          { very_liked:9, liked:6, okay_neutral:5,  disliked:2 },
+  emotional:      { very_liked:8, liked:8, okay_neutral:1 },
+  dark:           { very_liked:3, liked:5, okay_neutral:4,  disliked:1 },
+  thriller:       { very_liked:2, liked:6, okay_neutral:2 },
+  lighthearted:   { liked:2,      okay_neutral:5, disliked:3 },
+  action:         { very_liked:2, liked:2, okay_neutral:3,  disliked:2 },
+  "sci-fi":       { very_liked:3, liked:3, okay_neutral:2 },
+  animation:      { very_liked:4, liked:2, okay_neutral:2 },
+  reality:        { very_liked:3, liked:2, okay_neutral:2,  disliked:1 },
+  slice_of_life:  { very_liked:3, liked:3 },
+  psychological:  { very_liked:1, liked:5 },
+};
+
+const BUCKETS = ["very_liked","liked","okay_neutral","disliked"];
+const BUCKET_COLORS = {
+  very_liked:   "#22c55e",
+  liked:        "#3b82f6",
+  okay_neutral: "#f59e0b",
+  disliked:     "#ef4444",
+};
+const BUCKET_LABELS = {
+  very_liked:   "Very Liked",
+  liked:        "Liked",
+  okay_neutral: "Neutral",
+  disliked:     "Disliked",
+};
+
+// ─── Layout ────────────────────────────────────────────────────────────────
+const W = 740, H = 520;
+const LEFT_X = 180, RIGHT_X = 560;
+const TOP = 30, BOT = H - 30;
+const NODE_W = 14;
+const GAP = 6; // gap between nodes on same column
+
+// Left side: genre nodes — evenly spaced
+const genreTotalH = (BOT - TOP);
+const genreSlot = genreTotalH / GENRES.length;
+
+// Right side: bucket nodes — sized by total flow into each bucket
+const bucketTotals = {};
+BUCKETS.forEach(b => {
+  bucketTotals[b] = GENRES.reduce((s, g) => s + (FLOWS[g][b] || 0), 0);
+});
+const totalAll = Object.values(bucketTotals).reduce((a,b) => a+b, 0);
+const bucketUsableH = genreTotalH - (BUCKETS.length - 1) * GAP;
+
+// Compute bucket node positions (y start, height)
+let bucketNodes = {};
+let by = TOP;
+BUCKETS.forEach(b => {
+  const h = (bucketTotals[b] / totalAll) * bucketUsableH;
+  bucketNodes[b] = { y: by, h: h };
+  by += h + GAP;
+});
+
+// Genre node y-center
+function genreY(i) { return TOP + genreSlot * i + genreSlot / 2; }
+
+// ─── Build flow segments ───────────────────────────────────────────────────
+// For each bucket, track current fill offset (flows stack vertically)
+let bucketFillOffset = {};
+BUCKETS.forEach(b => { bucketFillOffset[b] = 0; });
+
+let flowData = []; // { genre, bucket, count, path, color }
+
+GENRES.forEach((genre, gi) => {
+  const gy = genreY(gi);
+  const genreTotal = Object.values(FLOWS[genre]).reduce((a,b) => a+b, 0);
+  const genreNodeH = genreSlot * 0.55; // node height on left
+
+  // flows out of this genre stack vertically within its node
+  let genreFillOffset = 0;
+
+  BUCKETS.forEach(bucket => {
+    const count = FLOWS[genre][bucket] || 0;
+    if (count === 0) return;
+
+    const ratio = count / genreTotal;
+    const flowThickLeft = genreNodeH * ratio;
+
+    // Left source band
+    const srcY1 = gy - genreNodeH / 2 + genreFillOffset;
+    const srcY2 = srcY1 + flowThickLeft;
+    genreFillOffset += flowThickLeft;
+
+    // Right target band
+    const bn = bucketNodes[bucket];
+    const targetRatio = count / bucketTotals[bucket];
+    const flowThickRight = bn.h * targetRatio;
+    const dstY1 = bn.y + bucketFillOffset[bucket];
+    const dstY2 = dstY1 + flowThickRight;
+    bucketFillOffset[bucket] += flowThickRight;
+
+    // Cubic bezier path (filled shape)
+    const cp = (RIGHT_X - LEFT_X) * 0.45;
+    const path = [
+      `M ${LEFT_X} ${srcY1}`,
+      `C ${LEFT_X + cp} ${srcY1}, ${RIGHT_X - cp} ${dstY1}, ${RIGHT_X} ${dstY1}`,
+      `L ${RIGHT_X} ${dstY2}`,
+      `C ${RIGHT_X - cp} ${dstY2}, ${LEFT_X + cp} ${srcY2}, ${LEFT_X} ${srcY2}`,
+      `Z`
+    ].join(" ");
+
+    flowData.push({ genre, bucket, count, path, srcY1, srcY2, dstY1, dstY2 });
+  });
+});
+
+// ─── Render ────────────────────────────────────────────────────────────────
+let hovered = null; // { genre } or { bucket } or null
+
+function render() {
+  const svg = document.getElementById("sankey");
+  svg.innerHTML = "";
+
+  // ── Flows ──
+  flowData.forEach((f, idx) => {
+    const col = BUCKET_COLORS[f.bucket];
+    const isHov = hovered && (hovered.genre === f.genre || hovered.bucket === f.bucket);
+    const isAny = hovered !== null;
+    const opacity = isAny ? (isHov ? 0.7 : 0.06) : 0.28;
+
+    svg.innerHTML += `
+      <path class="flow-path" data-idx="${idx}"
+        d="${f.path}"
+        fill="${col}" fill-opacity="${opacity}"
+        stroke="${col}" stroke-width="0.5" stroke-opacity="${opacity * 0.6}"
+      />`;
+  });
+
+  // ── Left genre nodes ──
+  GENRES.forEach((genre, i) => {
+    const cy = genreY(i);
+    const nh = genreSlot * 0.55;
+    const isHov = hovered && hovered.genre === genre;
+
+    svg.innerHTML += `
+      <rect class="genre-node" data-genre="${genre}"
+        x="${LEFT_X - NODE_W}" y="${cy - nh/2}" width="${NODE_W}" height="${nh}" rx="3"
+        fill="${isHov ? '#334155' : '#1e293b'}" style="cursor:pointer; transition: fill 0.2s"
+      />`;
+    svg.innerHTML += `
+      <text x="${LEFT_X - NODE_W - 8}" y="${cy + 3.5}" class="node-label-left"
+            fill="${isHov ? '#f1f5f9' : '#94a3b8'}">${genre}</text>`;
+  });
+
+  // ── Right bucket nodes ──
+  BUCKETS.forEach(bucket => {
+    const bn = bucketNodes[bucket];
+    const col = BUCKET_COLORS[bucket];
+    const isHov = hovered && hovered.bucket === bucket;
+
+    svg.innerHTML += `
+      <rect class="bucket-node" data-bucket="${bucket}"
+        x="${RIGHT_X}" y="${bn.y}" width="${NODE_W}" height="${bn.h}" rx="3"
+        fill="${col}" fill-opacity="${isHov ? 0.5 : 0.3}" style="cursor:pointer; transition: fill-opacity 0.2s"
+      />`;
+    svg.innerHTML += `
+      <text x="${RIGHT_X + NODE_W + 8}" y="${bn.y + bn.h/2 + 4}" class="node-label-right"
+            fill="${col}">${BUCKET_LABELS[bucket]} (${bucketTotals[bucket]})</text>`;
+  });
+
+  // ── Tooltip ──
+  if (hovered) {
+    let lines = [];
+    let title = "";
+
+    if (hovered.genre) {
+      title = hovered.genre;
+      const g = FLOWS[hovered.genre];
+      BUCKETS.forEach(b => {
+        if (g[b]) lines.push({ label: BUCKET_LABELS[b], val: g[b], color: BUCKET_COLORS[b] });
+      });
+    } else if (hovered.bucket) {
+      title = BUCKET_LABELS[hovered.bucket];
+      GENRES.forEach(g => {
+        const val = FLOWS[g][hovered.bucket] || 0;
+        if (val > 0) lines.push({ label: g, val, color: BUCKET_COLORS[hovered.bucket] });
+      });
+      lines.sort((a,b) => b.val - a.val);
+    }
+
+    const boxW = 140, lineH = 17, padT = 24, padB = 8;
+    const boxH = padT + lines.length * lineH + padB;
+
+    // 위치: hovered가 genre면 왼쪽, bucket면 오른쪽
+    let tx, ty;
+    if (hovered.genre) {
+      const gi = GENRES.indexOf(hovered.genre);
+      tx = 10;
+      ty = genreY(gi) - boxH / 2;
+    } else {
+      const bn = bucketNodes[hovered.bucket];
+      tx = RIGHT_X + NODE_W + 80;
+      ty = bn.y + bn.h / 2 - boxH / 2;
+    }
+    if (ty < 0) ty = 4;
+    if (ty + boxH > H) ty = H - boxH - 4;
+
+    svg.innerHTML += `<rect x="${tx}" y="${ty}" width="${boxW}" height="${boxH}" rx="6" class="tooltip-box"/>`;
+    svg.innerHTML += `<text x="${tx + boxW/2}" y="${ty + 16}" text-anchor="middle" class="tooltip-title">${title}</text>`;
+    lines.forEach((l, idx) => {
+      const ly = ty + padT + idx * lineH + 10;
+      svg.innerHTML += `<circle cx="${tx + 12}" cy="${ly - 3}" r="4" fill="${l.color}"/>`;
+      svg.innerHTML += `<text x="${tx + 22}" y="${ly}" class="tooltip-line">${l.label}: ${l.val}</text>`;
+    });
+  }
+
+  // ── Events ──
+  svg.querySelectorAll(".genre-node").forEach(el => {
+    el.addEventListener("mouseenter", () => { hovered = { genre: el.dataset.genre }; render(); });
+    el.addEventListener("mouseleave", () => { hovered = null; render(); });
+  });
+  svg.querySelectorAll(".bucket-node").forEach(el => {
+    el.addEventListener("mouseenter", () => { hovered = { bucket: el.dataset.bucket }; render(); });
+    el.addEventListener("mouseleave", () => { hovered = null; render(); });
+  });
+  svg.querySelectorAll(".flow-path").forEach(el => {
+    const idx = parseInt(el.dataset.idx);
+    el.addEventListener("mouseenter", () => { hovered = { genre: flowData[idx].genre, bucket: flowData[idx].bucket }; render(); });
+    el.addEventListener("mouseleave", () => { hovered = null; render(); });
+  });
+}
+
+render();
+</script>
+</body>
+</html>
