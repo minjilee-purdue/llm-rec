@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Genre Taste Radar — llm-rec</title>
+<title>Watch Preference Visualizer — llm-rec</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -29,18 +29,60 @@
   .subtitle {
     font-size: 12px;
     color: #64748b;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
     text-align: center;
+    max-width: 560px;
+    line-height: 1.5;
   }
 
+  /* ─── Tabs ────────────────────────────────────────────────── */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    background: #1e293b;
+    border-radius: 10px;
+    padding: 3px;
+    margin-bottom: 28px;
+    width: 100%;
+    max-width: 740px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 8px 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #64748b;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .tab-btn.active { background: #334155; color: #f1f5f9; }
+
+  /* ─── Panels ──────────────────────────────────────────────── */
+  .panel { display: none; width: 100%; max-width: 740px; }
+  .panel.active { display: block; }
+
+  .panel-subtitle {
+    font-size: 11.5px;
+    color: #64748b;
+    margin-bottom: 16px;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  svg { width: 100%; }
+
+  /* ─── Radar toggles ───────────────────────────────────────── */
   .toggle-row {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
     justify-content: center;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
-
   .toggle-btn {
     display: flex;
     align-items: center;
@@ -56,188 +98,403 @@
     transition: all 0.2s;
     font-family: inherit;
   }
-
   .toggle-btn .dot {
-    width: 9px;
-    height: 9px;
+    width: 9px; height: 9px;
     border-radius: 50%;
     background: transparent;
     transition: background 0.2s;
   }
-
   .toggle-btn.active .dot { background: var(--col); }
   .toggle-btn.active { border-color: var(--col); background: color-mix(in srgb, var(--col) 8%, #12162a); color: var(--col); }
   .toggle-btn .dot { border: 1.5px solid var(--col); }
 
-  svg { width: 100%; max-width: 520px; }
-
-  /* Tooltip */
-  .tooltip-box {
-    fill: #1a1f35;
-    stroke: #334155;
-    stroke-width: 1;
+  /* ─── Bubble legend ───────────────────────────────────────── */
+  .legend-row {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
   }
-  .tooltip-label { fill: #cbd5e1; font-size: 10px; font-family: 'Georgia', serif; }
-  .axis-label { fill: #64748b; font-size: 11px; font-family: 'Georgia', serif; transition: fill 0.2s; }
-  .axis-label.hovered { fill: #cbd5e1; font-weight: 600; }
-  .ring-label { fill: #334155; font-size: 9px; font-family: 'Georgia', serif; }
-  .axis-line { stroke: #1e293b; stroke-width: 1; transition: stroke 0.2s; }
-  .axis-line.hovered { stroke: #475569; stroke-width: 1.5; }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #64748b;
+  }
+  .legend-item .swatch { width: 12px; height: 12px; border-radius: 50%; }
+
+  /* ─── Insight box ─────────────────────────────────────────── */
+  .insight {
+    margin-top: 20px;
+    background: #141a2e;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 11.5px;
+    color: #94a3b8;
+    line-height: 1.6;
+  }
+  .insight strong { color: #cbd5e1; }
 </style>
 </head>
 <body>
 
-<h1>Genre Taste Radar</h1>
-<p class="subtitle">Each axis = genre frequency within that rating bucket. Hover axes to inspect values.</p>
+<h1>Watch Preference Visualizer</h1>
+<p class="subtitle">76 titles · 12 genre dimensions · Interactive exploration of taste patterns</p>
 
-<div class="toggle-row" id="toggles"></div>
-<svg id="radar" viewBox="0 0 520 520"></svg>
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="radar">Genre Radar</button>
+  <button class="tab-btn"        data-tab="bubble">Bubble Chart</button>
+  <button class="tab-btn"        data-tab="sankey">Genre Flow</button>
+</div>
 
+<!-- ═══ RADAR ═══ -->
+<div class="panel active" id="panel-radar">
+  <p class="panel-subtitle">Each axis = genre frequency within that rating bucket. Hover axes to inspect values.</p>
+  <div class="toggle-row" id="radar-toggles"></div>
+  <svg id="radar" viewBox="0 0 520 520"></svg>
+</div>
+
+<!-- ═══ BUBBLE ═══ -->
+<div class="panel" id="panel-bubble">
+  <p class="panel-subtitle">Y = average score · Bubble size = how often the genre appears · Color = score tier</p>
+  <div class="legend-row">
+    <div class="legend-item"><div class="swatch" style="background:#22c55e"></div> High avg (≥7)</div>
+    <div class="legend-item"><div class="swatch" style="background:#3b82f6"></div> Mid avg (5–7)</div>
+    <div class="legend-item"><div class="swatch" style="background:#ef4444"></div> Low avg (&lt;5)</div>
+    <div class="legend-item" style="margin-left:12px;color:#475569;">● size = frequency</div>
+  </div>
+  <svg id="bubble" viewBox="0 0 680 400"></svg>
+  <div class="insight">
+    The green zone (<strong>adventure, animation, emotional</strong>) shows genres with both high scores and frequent appearances, while the red zone (<strong>superhero, lighthearted</strong>) clusters at low scores. The size gap between <strong>romance</strong> and <strong>emotional</strong> is the sharpest signal — romance is the most frequent genre overall yet pulls a low average, while emotional appears almost as often but consistently scores high. That contrast is the core pattern in the taste profile.
+  </div>
+</div>
+
+<!-- ═══ SANKEY ═══ -->
+<div class="panel" id="panel-sankey">
+  <p class="panel-subtitle">How each genre distributes across rating buckets. Thicker flows = more titles. Hover to highlight.</p>
+  <svg id="sankey" viewBox="0 0 740 500"></svg>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SHARED DATA + TAB SWITCHER
+     ═══════════════════════════════════════════════════════════════════════ -->
 <script>
-// ─── Data ──────────────────────────────────────────────────────────────────
-const TAGS = [
-  "romance","drama","emotional","dark","thriller","lighthearted",
-  "action","sci-fi","animation","reality","slice_of_life","psychological"
-];
+const BUCKET_COLORS = { very_liked:"#22c55e", liked:"#3b82f6", okay_neutral:"#f59e0b", disliked:"#ef4444" };
+const BUCKET_LABELS = { very_liked:"Very Liked", liked:"Liked", okay_neutral:"Neutral", disliked:"Disliked" };
+const BUCKETS = ["very_liked","liked","okay_neutral","disliked"];
 
-const BUCKETS = {
-  very_liked:   { values: [6,9,8,3,2,0,2,3,4,3,3,1], color: "#22c55e", label: "Very Liked" },
-  liked:        { values: [3,6,8,5,6,2,2,3,2,2,3,5], color: "#3b82f6", label: "Liked" },
-  okay_neutral: { values: [11,5,1,4,2,5,3,2,2,2,0,0], color: "#f59e0b", label: "Neutral" },
-  disliked:     { values: [5,2,0,1,0,3,2,0,0,1,0,0], color: "#ef4444", label: "Disliked" },
-};
-
-const MAX_VAL = 11;
-const N = TAGS.length;
-const CX = 260, CY = 260, R = 190;
-
-// ─── State ─────────────────────────────────────────────────────────────────
-const visible = { very_liked: true, liked: true, okay_neutral: true, disliked: true };
-let hoveredAxis = null;
-
-// ─── Geometry ──────────────────────────────────────────────────────────────
-function angleFor(i) { return (Math.PI / 2) + (2 * Math.PI * i) / N; }
-function polar(angle, r) { return { x: CX - Math.cos(angle) * r, y: CY - Math.sin(angle) * r }; }
-function polygonPoints(values) {
-  return values.map((v, i) => {
-    const { x, y } = polar(angleFor(i), (v / MAX_VAL) * R);
-    return `${x},${y}`;
-  }).join(" ");
-}
-
-// ─── Render ────────────────────────────────────────────────────────────────
-function render() {
-  const svg = document.getElementById("radar");
-  svg.innerHTML = "";
-
-  // Defs (gradients)
-  let defs = '<defs>';
-  Object.entries(BUCKETS).forEach(([key, b]) => {
-    defs += `<radialGradient id="grad-${key}" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="${b.color}" stop-opacity="0.22"/>
-      <stop offset="100%" stop-color="${b.color}" stop-opacity="0.02"/>
-    </radialGradient>`;
+// Tab switching
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
   });
-  defs += '</defs>';
-  svg.innerHTML += defs;
+});
+</script>
 
-  // Grid rings
-  [0.25, 0.5, 0.75, 1].forEach((t) => {
-    svg.innerHTML += `<circle cx="${CX}" cy="${CY}" r="${R * t}" fill="none" stroke="#1e293b" stroke-width="1"/>`;
+<!-- ═══════════════════════════════════════════════════════════════════════
+     RADAR
+     ═══════════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  const TAGS = ["romance","drama","emotional","dark","thriller","lighthearted","action","sci-fi","animation","reality","slice_of_life","psychological"];
+  const DATA = {
+    very_liked:   { values:[6,9,8,3,2,0,2,3,4,3,3,1], color:"#22c55e", label:"Very Liked" },
+    liked:        { values:[3,6,8,5,6,2,2,3,2,2,3,5], color:"#3b82f6", label:"Liked" },
+    okay_neutral: { values:[11,5,1,4,2,5,3,2,2,2,0,0], color:"#f59e0b", label:"Neutral" },
+    disliked:     { values:[5,2,0,1,0,3,2,0,0,1,0,0], color:"#ef4444", label:"Disliked" },
+  };
+  const MAX_VAL=11, N=TAGS.length, CX=260, CY=260, R=190;
+  const visible = { very_liked:true, liked:true, okay_neutral:true, disliked:true };
+  let hoveredAxis = null;
+
+  function angleFor(i) { return (Math.PI/2)+(2*Math.PI*i)/N; }
+  function polar(a,r) { return { x:CX-Math.cos(a)*r, y:CY-Math.sin(a)*r }; }
+  function polyPts(vals) { return vals.map((v,i)=>{ const p=polar(angleFor(i),(v/MAX_VAL)*R); return `${p.x},${p.y}`; }).join(" "); }
+
+  // Build toggles
+  const cont = document.getElementById("radar-toggles");
+  Object.entries(DATA).forEach(([key,b]) => {
+    const btn = document.createElement("button");
+    btn.className = "toggle-btn active";
+    btn.style.setProperty("--col", b.color);
+    btn.innerHTML = `<span class="dot"></span>${b.label}`;
+    btn.addEventListener("click", () => { visible[key]=!visible[key]; btn.classList.toggle("active",visible[key]); render(); });
+    cont.appendChild(btn);
   });
 
-  // Ring value labels
-  [0.25, 0.5, 0.75, 1].forEach((t) => {
-    svg.innerHTML += `<text x="${CX + 6}" y="${CY - R * t + 4}" class="ring-label">${Math.round(MAX_VAL * t)}</text>`;
-  });
+  function render() {
+    const svg = document.getElementById("radar");
+    svg.innerHTML = "";
 
-  // Axes + labels
-  TAGS.forEach((tag, i) => {
-    const angle = angleFor(i);
-    const inner = polar(angle, 0);
-    const outer = polar(angle, R);
-    const labelPos = polar(angle, R + 26);
-    const isHov = hoveredAxis === i;
-
-    svg.innerHTML += `
-      <line class="axis-line ${isHov ? 'hovered' : ''}" x1="${inner.x}" y1="${inner.y}" x2="${outer.x}" y2="${outer.y}"/>
-      <text class="axis-label ${isHov ? 'hovered' : ''}"
-            x="${labelPos.x}" y="${labelPos.y}"
-            text-anchor="middle" dominant-baseline="middle"
-            data-axis="${i}">${tag}</text>
-    `;
-
-    // Invisible wider hit area on axis
-    svg.innerHTML += `
-      <line class="axis-hit" x1="${inner.x}" y1="${inner.y}" x2="${outer.x}" y2="${outer.y}"
-            stroke="transparent" stroke-width="14" data-axis="${i}" style="cursor:default"/>
-    `;
-  });
-
-  // Polygons
-  Object.entries(BUCKETS).forEach(([key, b]) => {
-    if (!visible[key]) return;
-    svg.innerHTML += `<polygon points="${polygonPoints(b.values)}" fill="url(#grad-${key})" stroke="${b.color}" stroke-width="2" stroke-linejoin="round"/>`;
-    // Vertex dots
-    b.values.forEach((v, i) => {
-      const { x, y } = polar(angleFor(i), (v / MAX_VAL) * R);
-      svg.innerHTML += `<circle cx="${x}" cy="${y}" r="3" fill="${b.color}" stroke="#0a0e1a" stroke-width="1.5"/>`;
+    // Defs
+    let defs = '<defs>';
+    Object.entries(DATA).forEach(([k,b]) => {
+      defs += `<radialGradient id="rg-${k}" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${b.color}" stop-opacity="0.22"/><stop offset="100%" stop-color="${b.color}" stop-opacity="0.02"/></radialGradient>`;
     });
-  });
+    svg.innerHTML += defs + '</defs>';
 
-  // Center dot
-  svg.innerHTML += `<circle cx="${CX}" cy="${CY}" r="2.5" fill="#334155"/>`;
+    // Rings
+    [0.25,0.5,0.75,1].forEach(t => {
+      svg.innerHTML += `<circle cx="${CX}" cy="${CY}" r="${R*t}" fill="none" stroke="#1e293b" stroke-width="1"/>`;
+      svg.innerHTML += `<text x="${CX+6}" y="${CY-R*t+4}" fill="#334155" font-size="9" font-family="Georgia,serif">${Math.round(MAX_VAL*t)}</text>`;
+    });
 
-  // Tooltip
-  if (hoveredAxis !== null) {
-    const i = hoveredAxis;
-    const angle = angleFor(i);
-    const labelPos = polar(angle, R + 26);
+    // Axes
+    TAGS.forEach((tag,i) => {
+      const a=angleFor(i), o=polar(a,R), lp=polar(a,R+26), isH=hoveredAxis===i;
+      svg.innerHTML += `<line x1="${CX}" y1="${CY}" x2="${o.x}" y2="${o.y}" stroke="${isH?'#475569':'#1e293b'}" stroke-width="${isH?1.5:1}"/>`;
+      svg.innerHTML += `<line x1="${CX}" y1="${CY}" x2="${o.x}" y2="${o.y}" stroke="transparent" stroke-width="14" data-axis="${i}" class="r-hit" style="cursor:default"/>`;
+      svg.innerHTML += `<text x="${lp.x}" y="${lp.y}" text-anchor="middle" dominant-baseline="middle" fill="${isH?'#cbd5e1':'#64748b'}" font-size="11" font-weight="${isH?600:400}" font-family="Georgia,serif" style="pointer-events:none">${tag}</text>`;
+    });
 
-    const entries = Object.entries(BUCKETS).filter(([k]) => visible[k]);
-    const boxW = 108, lineH = 16, pad = 10;
-    const boxH = pad + entries.length * lineH + 4;
+    // Polygons
+    Object.entries(DATA).forEach(([key,b]) => {
+      if (!visible[key]) return;
+      svg.innerHTML += `<polygon points="${polyPts(b.values)}" fill="url(#rg-${key})" stroke="${b.color}" stroke-width="2" stroke-linejoin="round"/>`;
+      b.values.forEach((v,i) => {
+        const p=polar(angleFor(i),(v/MAX_VAL)*R);
+        svg.innerHTML += `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${b.color}" stroke="#0a0e1a" stroke-width="1.5"/>`;
+      });
+    });
 
-    // Position tooltip away from center
-    let tx = labelPos.x, ty = labelPos.y;
-    if (ty < CY) ty -= boxH + 8; else ty += 8;
-    if (tx > CX + 40) tx -= boxW;
-    else if (tx < CX - 40) tx = tx;
-    else tx -= boxW / 2;
+    svg.innerHTML += `<circle cx="${CX}" cy="${CY}" r="2.5" fill="#334155"/>`;
 
-    svg.innerHTML += `<rect x="${tx}" y="${ty}" width="${boxW}" height="${boxH}" rx="6" class="tooltip-box"/>`;
-    entries.forEach(([key, b], idx) => {
-      const dotX = tx + 10, dotY = ty + pad + idx * lineH + 5;
-      svg.innerHTML += `<circle cx="${dotX}" cy="${dotY}" r="4" fill="${b.color}"/>`;
-      svg.innerHTML += `<text x="${dotX + 12}" y="${dotY + 4}" class="tooltip-label">${b.label}: ${b.values[i]}</text>`;
+    // Tooltip
+    if (hoveredAxis!==null) {
+      const i=hoveredAxis, lp=polar(angleFor(i),R+26);
+      const entries=Object.entries(DATA).filter(([k])=>visible[k]);
+      const boxW=108, lineH=16, pad=10, boxH=pad+entries.length*lineH+4;
+      let tx=lp.x, ty=lp.y;
+      if (ty<CY) ty-=boxH+8; else ty+=8;
+      if (tx>CX+40) tx-=boxW; else if (tx<CX-40) {} else tx-=boxW/2;
+
+      svg.innerHTML += `<rect x="${tx}" y="${ty}" width="${boxW}" height="${boxH}" rx="6" fill="#1a1f35" stroke="#334155" stroke-width="1"/>`;
+      entries.forEach(([key,b],idx) => {
+        const dy=ty+pad+idx*lineH+5;
+        svg.innerHTML += `<circle cx="${tx+10}" cy="${dy}" r="4" fill="${b.color}"/>`;
+        svg.innerHTML += `<text x="${tx+22}" y="${dy+4}" fill="#cbd5e1" font-size="10" font-family="Georgia,serif">${b.label}: ${b.values[i]}</text>`;
+      });
+    }
+
+    svg.querySelectorAll(".r-hit").forEach(el => {
+      const idx=parseInt(el.dataset.axis);
+      el.addEventListener("mouseenter", ()=>{ hoveredAxis=idx; render(); });
+      el.addEventListener("mouseleave", ()=>{ hoveredAxis=null; render(); });
     });
   }
 
-  // ─── Event listeners ─────────────────────────────────────────────────────
-  svg.querySelectorAll(".axis-hit, .axis-label").forEach((el) => {
-    const idx = parseInt(el.dataset.axis);
-    el.addEventListener("mouseenter", () => { hoveredAxis = idx; render(); });
-    el.addEventListener("mouseleave", () => { hoveredAxis = null; render(); });
-  });
-}
+  render();
+})();
+</script>
 
-// ─── Toggle buttons ────────────────────────────────────────────────────────
-const toggles = document.getElementById("toggles");
-Object.entries(BUCKETS).forEach(([key, b]) => {
-  const btn = document.createElement("button");
-  btn.className = "toggle-btn active";
-  btn.style.setProperty("--col", b.color);
-  btn.innerHTML = `<span class="dot"></span>${b.label}`;
-  btn.addEventListener("click", () => {
-    visible[key] = !visible[key];
-    btn.classList.toggle("active", visible[key]);
-    render();
-  });
-  toggles.appendChild(btn);
-});
+<!-- ═══════════════════════════════════════════════════════════════════════
+     BUBBLE
+     ═══════════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  const BUBBLES = [
+    {tag:"adventure",avg:8.00,count:3},{tag:"animation",avg:7.62,count:8},
+    {tag:"social_commentary",avg:7.60,count:5},{tag:"emotional",avg:7.59,count:17},
+    {tag:"slice_of_life",avg:7.50,count:6},{tag:"sci-fi",avg:7.25,count:8},
+    {tag:"mystery",avg:7.20,count:5},{tag:"psychological",avg:7.17,count:6},
+    {tag:"thriller",avg:7.00,count:10},{tag:"epic",avg:6.50,count:4},
+    {tag:"drama",avg:6.45,count:22},{tag:"dark",avg:6.38,count:13},
+    {tag:"competition",avg:6.25,count:4},{tag:"dating",avg:6.00,count:3},
+    {tag:"reality",avg:5.88,count:8},{tag:"food",avg:5.67,count:3},
+    {tag:"action",avg:5.33,count:9},{tag:"historical",avg:5.25,count:4},
+    {tag:"romance",avg:5.16,count:25},{tag:"comedy",avg:5.00,count:3},
+    {tag:"fantasy",avg:4.50,count:6},{tag:"lighthearted",avg:4.20,count:10},
+    {tag:"superhero",avg:3.33,count:3},
+  ];
 
-// ─── Init ──────────────────────────────────────────────────────────────────
-render();
+  const W=680, H=400, L=52, R=28, T=16, B=44, plotW=W-L-R, plotH=H-T-B;
+  const yMin=2, yMax=9;
+  function yPx(v) { return T+plotH-((v-yMin)/(yMax-yMin))*plotH; }
+  function xPx(i) { return L+(i+0.5)*(plotW/BUBBLES.length); }
+  function bR(c) { return 6+((c-3)/(25-3))*(20-6); }
+  function bCol(a) { return a>=7?"#22c55e":a>=5?"#3b82f6":"#ef4444"; }
+
+  let hov = null;
+
+  function render() {
+    const svg = document.getElementById("bubble");
+    svg.innerHTML = "";
+
+    [3,4,5,6,7,8,9].forEach(v => {
+      const y=yPx(v);
+      svg.innerHTML += `<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#1e293b" stroke-width="1"/>`;
+      svg.innerHTML += `<text x="${L-6}" y="${y+3.5}" text-anchor="end" fill="#475569" font-size="10" font-family="Georgia,serif">${v}</text>`;
+    });
+    svg.innerHTML += `<text x="14" y="${T+plotH/2}" text-anchor="middle" fill="#64748b" font-size="11" font-family="Georgia,serif" transform="rotate(-90,14,${T+plotH/2})">Avg Score</text>`;
+    svg.innerHTML += `<line x1="${L}" y1="${yPx(7)}" x2="${W-R}" y2="${yPx(7)}" stroke="#22c55e" stroke-width="0.7" stroke-dasharray="4,4" opacity="0.25"/>`;
+    svg.innerHTML += `<line x1="${L}" y1="${yPx(5)}" x2="${W-R}" y2="${yPx(5)}" stroke="#ef4444" stroke-width="0.7" stroke-dasharray="4,4" opacity="0.25"/>`;
+
+    // Non-hovered
+    BUBBLES.forEach((b,i) => {
+      if (i===hov) return;
+      const cx=xPx(i),cy=yPx(b.avg),r=bR(b.count),col=bCol(b.avg);
+      svg.innerHTML += `<circle class="b-el" data-idx="${i}" cx="${cx}" cy="${cy}" r="${r}" fill="${col}" fill-opacity="0.18" stroke="${col}" stroke-width="1.5" style="cursor:pointer"/>`;
+      const st=b.tag.length>9?b.tag.slice(0,8)+"…":b.tag;
+      svg.innerHTML += `<text x="${cx}" y="${cy+r+13}" text-anchor="middle" fill="#475569" font-size="9.5" font-family="Georgia,serif" style="pointer-events:none">${st}</text>`;
+    });
+
+    // Hovered on top
+    if (hov!==null) {
+      const b=BUBBLES[hov],cx=xPx(hov),cy=yPx(b.avg),r=bR(b.count),col=bCol(b.avg);
+      svg.innerHTML += `<circle class="b-el" data-idx="${hov}" cx="${cx}" cy="${cy}" r="${r+2}" fill="${col}" fill-opacity="0.3" stroke="${col}" stroke-width="2.5" style="cursor:pointer"/>`;
+      svg.innerHTML += `<text x="${cx}" y="${cy+r+15}" text-anchor="middle" fill="#cbd5e1" font-size="9.5" font-family="Georgia,serif" style="pointer-events:none">${b.tag}</text>`;
+      let tx=cx-52; if(tx<L) tx=L; if(tx+104>W-R) tx=W-R-104;
+      const ty=cy-r-44;
+      svg.innerHTML += `<rect x="${tx}" y="${ty}" width="104" height="36" rx="6" fill="#1a1f35" stroke="#334155" stroke-width="1"/>`;
+      svg.innerHTML += `<text x="${tx+52}" y="${ty+15}" text-anchor="middle" fill="${col}" font-size="11" font-weight="600" font-family="Georgia,serif">${b.tag}</text>`;
+      svg.innerHTML += `<text x="${tx+52}" y="${ty+28}" text-anchor="middle" fill="#64748b" font-size="9" font-family="Georgia,serif">avg ${b.avg} · ×${b.count}</text>`;
+    }
+
+    svg.querySelectorAll(".b-el").forEach(el => {
+      const idx=parseInt(el.dataset.idx);
+      el.addEventListener("mouseenter", ()=>{ hov=idx; render(); });
+      el.addEventListener("mouseleave", ()=>{ hov=null; render(); });
+    });
+  }
+
+  render();
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     SANKEY
+     ═══════════════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  const GENRES = ["romance","drama","emotional","dark","thriller","lighthearted","action","sci-fi","animation","reality","slice_of_life","psychological"];
+  const FLOWS = {
+    romance:{very_liked:6,liked:3,okay_neutral:11,disliked:5},
+    drama:{very_liked:9,liked:6,okay_neutral:5,disliked:2},
+    emotional:{very_liked:8,liked:8,okay_neutral:1},
+    dark:{very_liked:3,liked:5,okay_neutral:4,disliked:1},
+    thriller:{very_liked:2,liked:6,okay_neutral:2},
+    lighthearted:{liked:2,okay_neutral:5,disliked:3},
+    action:{very_liked:2,liked:2,okay_neutral:3,disliked:2},
+    "sci-fi":{very_liked:3,liked:3,okay_neutral:2},
+    animation:{very_liked:4,liked:2,okay_neutral:2},
+    reality:{very_liked:3,liked:2,okay_neutral:2,disliked:1},
+    slice_of_life:{very_liked:3,liked:3},
+    psychological:{very_liked:1,liked:5},
+  };
+
+  const W=740, H=500, LX=180, RX=560, TOP=30, BOT=H-30, NW=14, GAP=6;
+  const slotH=(BOT-TOP)/GENRES.length;
+
+  const bTotals={};
+  BUCKETS.forEach(b=>{ bTotals[b]=GENRES.reduce((s,g)=>s+(FLOWS[g][b]||0),0); });
+  const totalAll=Object.values(bTotals).reduce((a,b)=>a+b,0);
+  const usableH=(BOT-TOP)-(BUCKETS.length-1)*GAP;
+
+  let bNodes={}, by=TOP;
+  BUCKETS.forEach(b=>{ const h=(bTotals[b]/totalAll)*usableH; bNodes[b]={y:by,h}; by+=h+GAP; });
+
+  function gy(i) { return TOP+slotH*i+slotH/2; }
+
+  // Pre-build flows
+  let bFill={}; BUCKETS.forEach(b=>{ bFill[b]=0; });
+  let flowData=[];
+  GENRES.forEach((genre,gi) => {
+    const y=gy(gi), total=Object.values(FLOWS[genre]).reduce((a,b)=>a+b,0), nh=slotH*0.55;
+    let gf=0;
+    BUCKETS.forEach(bucket => {
+      const count=FLOWS[genre][bucket]||0; if(!count) return;
+      const thL=nh*(count/total), s1=y-nh/2+gf, s2=s1+thL; gf+=thL;
+      const bn=bNodes[bucket], thR=bn.h*(count/bTotals[bucket]), d1=bn.y+bFill[bucket], d2=d1+thR;
+      bFill[bucket]+=thR;
+      const cp=(RX-LX)*0.45;
+      const path=`M ${LX} ${s1} C ${LX+cp} ${s1}, ${RX-cp} ${d1}, ${RX} ${d1} L ${RX} ${d2} C ${RX-cp} ${d2}, ${LX+cp} ${s2}, ${LX} ${s2} Z`;
+      flowData.push({genre,bucket,count,path});
+    });
+  });
+
+  let hov=null;
+
+  function render() {
+    const svg=document.getElementById("sankey");
+    svg.innerHTML="";
+
+    // Flows
+    flowData.forEach((f,idx) => {
+      const col=BUCKET_COLORS[f.bucket];
+      const isH=hov&&(hov.genre===f.genre||hov.bucket===f.bucket);
+      const op=hov?(isH?0.7:0.06):0.28;
+      svg.innerHTML+=`<path class="s-flow" data-idx="${idx}" d="${f.path}" fill="${col}" fill-opacity="${op}" stroke="${col}" stroke-width="0.5" stroke-opacity="${op*0.6}" style="cursor:pointer"/>`;
+    });
+
+    // Genre nodes (left)
+    GENRES.forEach((genre,i) => {
+      const cy=gy(i), nh=slotH*0.55, isH=hov&&hov.genre===genre;
+      svg.innerHTML+=`<rect class="s-genre" data-genre="${genre}" x="${LX-NW}" y="${cy-nh/2}" width="${NW}" height="${nh}" rx="3" fill="${isH?'#334155':'#1e293b'}" style="cursor:pointer;transition:fill 0.2s"/>`;
+      svg.innerHTML+=`<text x="${LX-NW-8}" y="${cy+3.5}" text-anchor="end" fill="${isH?'#f1f5f9':'#94a3b8'}" font-size="11" font-family="Georgia,serif">${genre}</text>`;
+    });
+
+    // Bucket nodes (right)
+    BUCKETS.forEach(bucket => {
+      const bn=bNodes[bucket], col=BUCKET_COLORS[bucket], isH=hov&&hov.bucket===bucket;
+      svg.innerHTML+=`<rect class="s-bucket" data-bucket="${bucket}" x="${RX}" y="${bn.y}" width="${NW}" height="${bn.h}" rx="3" fill="${col}" fill-opacity="${isH?0.5:0.3}" style="cursor:pointer;transition:fill-opacity 0.2s"/>`;
+      svg.innerHTML+=`<text x="${RX+NW+8}" y="${bn.y+bn.h/2+4}" fill="${col}" font-size="11.5" font-weight="600" font-family="Georgia,serif">${BUCKET_LABELS[bucket]} (${bTotals[bucket]})</text>`;
+    });
+
+    // Tooltip
+    if (hov) {
+      let lines=[],title="";
+      if (hov.genre&&!hov.bucket) {
+        title=hov.genre;
+        BUCKETS.forEach(b=>{ const v=FLOWS[hov.genre][b]; if(v) lines.push({label:BUCKET_LABELS[b],val:v,color:BUCKET_COLORS[b]}); });
+      } else if (hov.bucket&&!hov.genre) {
+        title=BUCKET_LABELS[hov.bucket];
+        GENRES.forEach(g=>{ const v=FLOWS[g][hov.bucket]||0; if(v) lines.push({label:g,val:v,color:BUCKET_COLORS[hov.bucket]}); });
+        lines.sort((a,b)=>b.val-a.val);
+      } else if (hov.genre&&hov.bucket) {
+        title=`${hov.genre} → ${BUCKET_LABELS[hov.bucket]}`;
+        lines.push({label:"count",val:FLOWS[hov.genre][hov.bucket],color:BUCKET_COLORS[hov.bucket]});
+      }
+
+      const boxW=148, lH=17, pT=24, pB=8, boxH=pT+lines.length*lH+pB;
+      let tx,ty;
+      if(hov.genre&&!hov.bucket){ tx=10; ty=gy(GENRES.indexOf(hov.genre))-boxH/2; }
+      else if(hov.bucket&&!hov.genre){ const bn=bNodes[hov.bucket]; tx=RX+NW+70; ty=bn.y+bn.h/2-boxH/2; }
+      else { tx=W/2-boxW/2; ty=12; }
+      if(ty<0) ty=4; if(ty+boxH>H) ty=H-boxH-4;
+
+      svg.innerHTML+=`<rect x="${tx}" y="${ty}" width="${boxW}" height="${boxH}" rx="6" fill="#1a1f35" stroke="#334155" stroke-width="1"/>`;
+      svg.innerHTML+=`<text x="${tx+boxW/2}" y="${ty+16}" text-anchor="middle" fill="#f1f5f9" font-size="11" font-weight="600" font-family="Georgia,serif">${title}</text>`;
+      lines.forEach((l,idx)=>{
+        const ly=ty+pT+idx*lH+10;
+        svg.innerHTML+=`<circle cx="${tx+12}" cy="${ly-3}" r="4" fill="${l.color}"/>`;
+        svg.innerHTML+=`<text x="${tx+22}" y="${ly}" fill="#cbd5e1" font-size="10" font-family="Georgia,serif">${l.label}: ${l.val}</text>`;
+      });
+    }
+
+    // Events
+    svg.querySelectorAll(".s-genre").forEach(el=>{
+      el.addEventListener("mouseenter",()=>{ hov={genre:el.dataset.genre}; render(); });
+      el.addEventListener("mouseleave",()=>{ hov=null; render(); });
+    });
+    svg.querySelectorAll(".s-bucket").forEach(el=>{
+      el.addEventListener("mouseenter",()=>{ hov={bucket:el.dataset.bucket}; render(); });
+      el.addEventListener("mouseleave",()=>{ hov=null; render(); });
+    });
+    svg.querySelectorAll(".s-flow").forEach(el=>{
+      const idx=parseInt(el.dataset.idx);
+      el.addEventListener("mouseenter",()=>{ hov={genre:flowData[idx].genre,bucket:flowData[idx].bucket}; render(); });
+      el.addEventListener("mouseleave",()=>{ hov=null; render(); });
+    });
+  }
+
+  render();
+})();
 </script>
 </body>
 </html>
