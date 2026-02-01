@@ -1,0 +1,809 @@
+{
+  "user": "Minji Lee",
+  "dataset_name": "watch_preference_dataset",
+  "version_date": "2026-01-31",
+  "rating_scale": [
+    "very_liked",
+    "liked",
+    "okay_neutral",
+    "disliked"
+  ],
+  "very_liked": [
+    {
+      "title": "Mouse",
+      "type": "tv_show",
+      "notes": "K-drama, Lee Seung-gi",
+      "score": 9,
+      "genre_tags": [
+        "thriller",
+        "dark",
+        "cat-and-mouse"
+      ]
+    },
+    {
+      "title": "D.P.",
+      "type": "tv_show",
+      "notes": "K-drama, Jung Hae-in",
+      "score": 9,
+      "genre_tags": [
+        "military",
+        "drama",
+        "social_commentary"
+      ]
+    },
+    {
+      "title": "Misaeng (Incomplete Life)",
+      "type": "tv_show",
+      "notes": "K-drama",
+      "score": 9,
+      "genre_tags": [
+        "workplace",
+        "drama",
+        "slice_of_life"
+      ]
+    },
+    {
+      "title": "Sangyeon and Eunjung",
+      "type": "tv_show",
+      "notes": "K-drama",
+      "score": 9,
+      "genre_tags": [
+        "romance",
+        "drama",
+        "emotional"
+      ]
+    },
+    {
+      "title": "Stove League",
+      "type": "tv_show",
+      "notes": "K-drama",
+      "score": 9,
+      "genre_tags": [
+        "sports",
+        "drama",
+        "underdog"
+      ]
+    },
+    {
+      "title": "Mr. Sunshine",
+      "type": "tv_show",
+      "notes": "K-drama, Lee Byung-hun",
+      "score": 9,
+      "genre_tags": [
+        "historical",
+        "war",
+        "romance",
+        "emotional"
+      ]
+    },
+    {
+      "title": "Reply 1988",
+      "type": "tv_show",
+      "notes": "K-drama",
+      "score": 9,
+      "genre_tags": [
+        "nostalgia",
+        "slice_of_life",
+        "romance"
+      ]
+    },
+    {
+      "title": "Our Unwritten Seoul",
+      "type": "tv_show",
+      "notes": "K-drama",
+      "score": 8,
+      "genre_tags": [
+        "romance",
+        "drama",
+        "emotional"
+      ]
+    },
+    {
+      "title": "Karma",
+      "type": "tv_show",
+      "notes": "K-drama",
+      "score": 8,
+      "genre_tags": [
+        "drama",
+        "emotional"
+      ]
+    },
+    {
+      "title": "Stranger Things",
+      "type": "tv_show",
+      "notes": "all seasons",
+      "score": 9,
+      "genre_tags": [
+        "sci-fi",
+        "mystery",
+        "horror",
+        "coming_of_age"
+      ]
+    },
+    {
+      "title": "Dune",
+      "type": "movie",
+      "notes": "Timothée Chalamet",
+      "score": 9,
+      "genre_tags": [
+        "sci-fi",
+        "epic",
+        "political"
+      ]
+    },
+    {
+      "title": "Arcane",
+      "type": "tv_show",
+      "notes": "all seasons",
+      "score": 9,
+      "genre_tags": [
+        "animation",
+        "action",
+        "emotional",
+        "dark"
+      ]
+    },
+    {
+      "title": "Devil's Plan (Season 1)",
+      "type": "tv_show",
+      "notes": "season 1 only (season 2 disliked)",
+      "score": 9,
+      "genre_tags": [
+        "reality",
+        "competition",
+        "strategy"
+      ]
+    },
+    {
+      "title": "Culinary Class Wars",
+      "type": "tv_show",
+      "notes": "seasons 1 & 2",
+      "score": 8,
+      "genre_tags": [
+        "reality",
+        "competition",
+        "food"
+      ]
+    },
+    {
+      "title": "Whiplash",
+      "type": "movie",
+      "score": 9,
+      "genre_tags": [
+        "drama",
+        "music",
+        "intense",
+        "psychological"
+      ]
+    },
+    {
+      "title": "Parasite",
+      "type": "movie",
+      "score": 10,
+      "genre_tags": [
+        "thriller",
+        "dark",
+        "social_commentary"
+      ]
+    },
+    {
+      "title": "Everything Everywhere All at Once",
+      "type": "movie",
+      "score": 9,
+      "genre_tags": [
+        "sci-fi",
+        "action",
+        "emotional",
+        "philosophical"
+      ]
+    },
+    {
+      "title": "The Devil Wears Prada",
+      "type": "movie",
+      "score": 8,
+      "genre_tags": [
+        "comedy",
+        "drama",
+        "workplace"
+      ]
+    },
+    {
+      "title": "Zootopia",
+      "type": "movie_series",
+      "notes": "all series",
+      "score": 10,
+      "genre_tags": [
+        "animation",
+        "adventure",
+        "social_commentary"
+      ]
+    },
+    {
+      "title": "Coco",
+      "type": "movie",
+      "score": 10,
+      "genre_tags": [
+        "animation",
+        "emotional",
+        "family",
+        "cultural"
+      ]
+    },
+    {
+      "title": "Toy Story",
+      "type": "movie_series",
+      "notes": "all series",
+      "score": 9,
+      "genre_tags": [
+        "animation",
+        "adventure",
+        "emotional"
+      ]
+    },
+    {
+      "title": "Love Door Next",
+      "type": "tv_show",
+      "notes": "K-drama",
+      "score": 9,
+      "genre_tags": [
+        "romance",
+        "drama"
+      ]
+    },
+    {
+      "title": "Solo but Wanna Date",
+      "type": "tv_show",
+      "notes": "K-reality/dating",
+      "score": 8,
+      "genre_tags": [
+        "reality",
+        "dating",
+        "relatable"
+      ]
+    },
+    {
+      "title": "Hello My Twenties",
+      "type": "tv_show",
+      "notes": "season 1 only",
+      "score": 8,
+      "genre_tags": [
+        "slice_of_life",
+        "coming_of_age",
+        "romance"
+      ]
+    }
+  ],
+  "liked": [
+    {
+      "title": "My Mister",
+      "type": "tv_show",
+      "notes": "K-drama",
+      "score": 7,
+      "genre_tags": [
+        "drama",
+        "emotional",
+        "slice_of_life"
+      ]
+    },
+    {
+      "title": "Mask Girl",
+      "type": "tv_show",
+      "notes": "K-drama",
+      "score": 7,
+      "genre_tags": [
+        "dark",
+        "psychological",
+        "social_commentary"
+      ]
+    },
+    {
+      "title": "My Liberation Notes",
+      "type": "tv_show",
+      "notes": "K-drama",
+      "score": 6,
+      "genre_tags": [
+        "drama",
+        "emotional",
+        "slice_of_life"
+      ]
+    },
+    {
+      "title": "Something in the Rain",
+      "type": "tv_show",
+      "notes": "K-drama",
+      "score": 6,
+      "genre_tags": [
+        "romance",
+        "drama",
+        "emotional"
+      ]
+    },
+    {
+      "title": "Misty",
+      "type": "tv_show",
+      "notes": "K-drama, Kim Nam-joo",
+      "score": 7,
+      "genre_tags": [
+        "thriller",
+        "mystery",
+        "psychological"
+      ]
+    },
+    {
+      "title": "Extraordinary Attorney Woo",
+      "type": "tv_show",
+      "notes": "K-drama",
+      "score": 6,
+      "genre_tags": [
+        "drama",
+        "legal",
+        "lighthearted"
+      ]
+    },
+    {
+      "title": "Crime Scene Zero",
+      "type": "tv_show",
+      "notes": "reality TV",
+      "score": 7,
+      "genre_tags": [
+        "reality",
+        "competition",
+        "mystery"
+      ]
+    },
+    {
+      "title": "Love After Divorce",
+      "type": "tv_show",
+      "notes": "US season",
+      "score": 6,
+      "genre_tags": [
+        "reality",
+        "dating"
+      ]
+    },
+    {
+      "title": "The Talented Mr. Ripley",
+      "type": "movie",
+      "notes": "1999 film",
+      "score": 7,
+      "genre_tags": [
+        "thriller",
+        "psychological",
+        "dark"
+      ]
+    },
+    {
+      "title": "Little Women",
+      "type": "tv_show",
+      "notes": "K-drama, Kim Go-eun",
+      "score": 7,
+      "genre_tags": [
+        "drama",
+        "historical",
+        "emotional"
+      ]
+    },
+    {
+      "title": "Boots",
+      "type": "movie",
+      "notes": "gay/military film",
+      "score": 6,
+      "genre_tags": [
+        "drama",
+        "military",
+        "romance"
+      ]
+    },
+    {
+      "title": "Our Beloved Summer",
+      "type": "tv_show",
+      "notes": "K-drama",
+      "score": 6,
+      "genre_tags": [
+        "romance",
+        "slice_of_life",
+        "lighthearted"
+      ]
+    },
+    {
+      "title": "The Silent Sea",
+      "type": "tv_show",
+      "notes": "K-drama",
+      "score": 7,
+      "genre_tags": [
+        "sci-fi",
+        "thriller",
+        "dark"
+      ]
+    },
+    {
+      "title": "Signal",
+      "type": "tv_show",
+      "notes": "K-drama, Kim Hye-soo",
+      "score": 7,
+      "genre_tags": [
+        "thriller",
+        "mystery",
+        "emotional"
+      ]
+    },
+    {
+      "title": "K-pop Demon Hunters",
+      "type": "tv_show",
+      "score": 7,
+      "genre_tags": [
+        "fantasy",
+        "action",
+        "supernatural"
+      ]
+    },
+    {
+      "title": "Weak Hero Class",
+      "type": "tv_show",
+      "notes": "all seasons",
+      "score": 7,
+      "genre_tags": [
+        "action",
+        "school",
+        "dark"
+      ]
+    },
+    {
+      "title": "Interstellar",
+      "type": "movie",
+      "score": 7,
+      "genre_tags": [
+        "sci-fi",
+        "emotional",
+        "epic"
+      ]
+    },
+    {
+      "title": "Gravity",
+      "type": "movie",
+      "score": 7,
+      "genre_tags": [
+        "sci-fi",
+        "thriller",
+        "survival"
+      ]
+    },
+    {
+      "title": "A Killer Paradox",
+      "type": "tv_show",
+      "score": 6,
+      "genre_tags": [
+        "thriller",
+        "mystery",
+        "dark"
+      ]
+    },
+    {
+      "title": "Inside Out",
+      "type": "movie",
+      "notes": "1",
+      "score": 7,
+      "genre_tags": [
+        "animation",
+        "emotional",
+        "psychological"
+      ]
+    },
+    {
+      "title": "Inside Out 2",
+      "type": "movie",
+      "notes": "2",
+      "score": 6,
+      "genre_tags": [
+        "animation",
+        "emotional",
+        "psychological"
+      ]
+    }
+  ],
+  "okay_neutral": [
+    {
+      "title": "My ID is Gangnam Beauty",
+      "type": "tv_show",
+      "score": 5,
+      "genre_tags": [
+        "romance",
+        "lighthearted"
+      ]
+    },
+    {
+      "title": "Melo Movie",
+      "type": "tv_show",
+      "score": 4,
+      "genre_tags": [
+        "romance",
+        "drama"
+      ]
+    },
+    {
+      "title": "The King",
+      "type": "tv_show",
+      "notes": "Lee Min-ho",
+      "score": 4,
+      "genre_tags": [
+        "political",
+        "romance"
+      ]
+    },
+    {
+      "title": "My Love from the Star",
+      "type": "tv_show",
+      "score": 5,
+      "genre_tags": [
+        "romance",
+        "fantasy",
+        "lighthearted"
+      ]
+    },
+    {
+      "title": "The Glory",
+      "type": "tv_show",
+      "score": 5,
+      "genre_tags": [
+        "thriller",
+        "revenge",
+        "dark"
+      ]
+    },
+    {
+      "title": "Squid Game",
+      "type": "tv_show",
+      "score": 5,
+      "genre_tags": [
+        "thriller",
+        "survival",
+        "dark"
+      ]
+    },
+    {
+      "title": "When Life Gives You Tangerines",
+      "type": "tv_show",
+      "score": 4,
+      "genre_tags": [
+        "romance",
+        "historical"
+      ]
+    },
+    {
+      "title": "Crash Landing on You",
+      "type": "tv_show",
+      "score": 5,
+      "genre_tags": [
+        "romance",
+        "drama",
+        "lighthearted"
+      ]
+    },
+    {
+      "title": "Single's Inferno",
+      "type": "tv_show",
+      "notes": "seasons 4–5",
+      "score": 4,
+      "genre_tags": [
+        "reality",
+        "dating"
+      ]
+    },
+    {
+      "title": "K Food Meets J Food",
+      "type": "tv_show",
+      "score": 4,
+      "genre_tags": [
+        "reality",
+        "food",
+        "travel"
+      ]
+    },
+    {
+      "title": "As You Stood By",
+      "type": "tv_show",
+      "score": 4,
+      "genre_tags": [
+        "romance",
+        "drama"
+      ]
+    },
+    {
+      "title": "Secret Garden",
+      "type": "tv_show",
+      "score": 5,
+      "genre_tags": [
+        "romance",
+        "fantasy",
+        "lighthearted"
+      ]
+    },
+    {
+      "title": "Abyss",
+      "type": "tv_show",
+      "notes": "Park Bo-young",
+      "score": 4,
+      "genre_tags": [
+        "romance",
+        "fantasy",
+        "lighthearted"
+      ]
+    },
+    {
+      "title": "His & Hers",
+      "type": "tv_show",
+      "notes": "Netflix 2026",
+      "score": 4,
+      "genre_tags": [
+        "romance",
+        "drama"
+      ]
+    },
+    {
+      "title": "3 Body Problem",
+      "type": "tv_show",
+      "score": 5,
+      "genre_tags": [
+        "sci-fi",
+        "epic",
+        "dark"
+      ]
+    },
+    {
+      "title": "Avatar",
+      "type": "movie_series",
+      "notes": "all series",
+      "score": 5,
+      "genre_tags": [
+        "sci-fi",
+        "action",
+        "epic"
+      ]
+    },
+    {
+      "title": "Wicked 1",
+      "type": "movie",
+      "score": 4,
+      "genre_tags": [
+        "musical",
+        "fantasy"
+      ]
+    },
+    {
+      "title": "Ratatouille",
+      "type": "movie",
+      "score": 5,
+      "genre_tags": [
+        "animation",
+        "comedy",
+        "food"
+      ]
+    },
+    {
+      "title": "La La Land",
+      "type": "movie",
+      "score": 5,
+      "genre_tags": [
+        "musical",
+        "romance",
+        "drama"
+      ]
+    },
+    {
+      "title": "Up",
+      "type": "movie",
+      "score": 5,
+      "genre_tags": [
+        "animation",
+        "emotional",
+        "adventure"
+      ]
+    },
+    {
+      "title": "Spider-Man",
+      "type": "movie_series",
+      "score": 4,
+      "genre_tags": [
+        "superhero",
+        "action"
+      ]
+    },
+    {
+      "title": "Batman",
+      "type": "movie_series",
+      "score": 4,
+      "genre_tags": [
+        "superhero",
+        "action",
+        "dark"
+      ]
+    }
+  ],
+  "disliked": [
+    {
+      "title": "When the Stars Gossip",
+      "type": "tv_show",
+      "score": 2,
+      "genre_tags": [
+        "romance",
+        "lighthearted"
+      ]
+    },
+    {
+      "title": "Doona",
+      "type": "tv_show",
+      "score": 2,
+      "genre_tags": [
+        "romance",
+        "drama"
+      ]
+    },
+    {
+      "title": "Can This Love Be Translated",
+      "type": "tv_show",
+      "score": 2,
+      "genre_tags": [
+        "romance",
+        "lighthearted"
+      ]
+    },
+    {
+      "title": "Hometown Cha Cha Cha",
+      "type": "tv_show",
+      "score": 2,
+      "genre_tags": [
+        "romance",
+        "lighthearted"
+      ]
+    },
+    {
+      "title": "Nevertheless",
+      "type": "tv_show",
+      "score": 2,
+      "genre_tags": [
+        "romance",
+        "drama"
+      ]
+    },
+    {
+      "title": "Gyeongseong Creature",
+      "type": "tv_show",
+      "score": 1,
+      "genre_tags": [
+        "historical",
+        "horror",
+        "action"
+      ]
+    },
+    {
+      "title": "Beef",
+      "type": "tv_show",
+      "score": 2,
+      "genre_tags": [
+        "dark",
+        "comedy",
+        "social_commentary"
+      ]
+    },
+    {
+      "title": "Moving",
+      "type": "tv_show",
+      "score": 2,
+      "genre_tags": [
+        "superhero",
+        "action",
+        "fantasy"
+      ]
+    },
+    {
+      "title": "Devil's Plan (Season 2)",
+      "type": "tv_show",
+      "score": 1,
+      "genre_tags": [
+        "reality",
+        "competition",
+        "strategy"
+      ]
+    }
+  ]
+}
