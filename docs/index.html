@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Genre Taste Radar — llm-rec</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background: #0a0e1a;
+    color: #e2e8f0;
+    font-family: 'Georgia', serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #f1f5f9;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 28px;
+    text-align: center;
+  }
+
+  .toggle-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+
+  .toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #334155;
+    background: #12162a;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .toggle-btn .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: transparent;
+    transition: background 0.2s;
+  }
+
+  .toggle-btn.active .dot { background: var(--col); }
+  .toggle-btn.active { border-color: var(--col); background: color-mix(in srgb, var(--col) 8%, #12162a); color: var(--col); }
+  .toggle-btn .dot { border: 1.5px solid var(--col); }
+
+  svg { width: 100%; max-width: 520px; }
+
+  /* Tooltip */
+  .tooltip-box {
+    fill: #1a1f35;
+    stroke: #334155;
+    stroke-width: 1;
+  }
+  .tooltip-label { fill: #cbd5e1; font-size: 10px; font-family: 'Georgia', serif; }
+  .axis-label { fill: #64748b; font-size: 11px; font-family: 'Georgia', serif; transition: fill 0.2s; }
+  .axis-label.hovered { fill: #cbd5e1; font-weight: 600; }
+  .ring-label { fill: #334155; font-size: 9px; font-family: 'Georgia', serif; }
+  .axis-line { stroke: #1e293b; stroke-width: 1; transition: stroke 0.2s; }
+  .axis-line.hovered { stroke: #475569; stroke-width: 1.5; }
+</style>
+</head>
+<body>
+
+<h1>Genre Taste Radar</h1>
+<p class="subtitle">Each axis = genre frequency within that rating bucket. Hover axes to inspect values.</p>
+
+<div class="toggle-row" id="toggles"></div>
+<svg id="radar" viewBox="0 0 520 520"></svg>
+
+<script>
+// ─── Data ──────────────────────────────────────────────────────────────────
+const TAGS = [
+  "romance","drama","emotional","dark","thriller","lighthearted",
+  "action","sci-fi","animation","reality","slice_of_life","psychological"
+];
+
+const BUCKETS = {
+  very_liked:   { values: [6,9,8,3,2,0,2,3,4,3,3,1], color: "#22c55e", label: "Very Liked" },
+  liked:        { values: [3,6,8,5,6,2,2,3,2,2,3,5], color: "#3b82f6", label: "Liked" },
+  okay_neutral: { values: [11,5,1,4,2,5,3,2,2,2,0,0], color: "#f59e0b", label: "Neutral" },
+  disliked:     { values: [5,2,0,1,0,3,2,0,0,1,0,0], color: "#ef4444", label: "Disliked" },
+};
+
+const MAX_VAL = 11;
+const N = TAGS.length;
+const CX = 260, CY = 260, R = 190;
+
+// ─── State ─────────────────────────────────────────────────────────────────
+const visible = { very_liked: true, liked: true, okay_neutral: true, disliked: true };
+let hoveredAxis = null;
+
+// ─── Geometry ──────────────────────────────────────────────────────────────
+function angleFor(i) { return (Math.PI / 2) + (2 * Math.PI * i) / N; }
+function polar(angle, r) { return { x: CX - Math.cos(angle) * r, y: CY - Math.sin(angle) * r }; }
+function polygonPoints(values) {
+  return values.map((v, i) => {
+    const { x, y } = polar(angleFor(i), (v / MAX_VAL) * R);
+    return `${x},${y}`;
+  }).join(" ");
+}
+
+// ─── Render ────────────────────────────────────────────────────────────────
+function render() {
+  const svg = document.getElementById("radar");
+  svg.innerHTML = "";
+
+  // Defs (gradients)
+  let defs = '<defs>';
+  Object.entries(BUCKETS).forEach(([key, b]) => {
+    defs += `<radialGradient id="grad-${key}" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="${b.color}" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="${b.color}" stop-opacity="0.02"/>
+    </radialGradient>`;
+  });
+  defs += '</defs>';
+  svg.innerHTML += defs;
+
+  // Grid rings
+  [0.25, 0.5, 0.75, 1].forEach((t) => {
+    svg.innerHTML += `<circle cx="${CX}" cy="${CY}" r="${R * t}" fill="none" stroke="#1e293b" stroke-width="1"/>`;
+  });
+
+  // Ring value labels
+  [0.25, 0.5, 0.75, 1].forEach((t) => {
+    svg.innerHTML += `<text x="${CX + 6}" y="${CY - R * t + 4}" class="ring-label">${Math.round(MAX_VAL * t)}</text>`;
+  });
+
+  // Axes + labels
+  TAGS.forEach((tag, i) => {
+    const angle = angleFor(i);
+    const inner = polar(angle, 0);
+    const outer = polar(angle, R);
+    const labelPos = polar(angle, R + 26);
+    const isHov = hoveredAxis === i;
+
+    svg.innerHTML += `
+      <line class="axis-line ${isHov ? 'hovered' : ''}" x1="${inner.x}" y1="${inner.y}" x2="${outer.x}" y2="${outer.y}"/>
+      <text class="axis-label ${isHov ? 'hovered' : ''}"
+            x="${labelPos.x}" y="${labelPos.y}"
+            text-anchor="middle" dominant-baseline="middle"
+            data-axis="${i}">${tag}</text>
+    `;
+
+    // Invisible wider hit area on axis
+    svg.innerHTML += `
+      <line class="axis-hit" x1="${inner.x}" y1="${inner.y}" x2="${outer.x}" y2="${outer.y}"
+            stroke="transparent" stroke-width="14" data-axis="${i}" style="cursor:default"/>
+    `;
+  });
+
+  // Polygons
+  Object.entries(BUCKETS).forEach(([key, b]) => {
+    if (!visible[key]) return;
+    svg.innerHTML += `<polygon points="${polygonPoints(b.values)}" fill="url(#grad-${key})" stroke="${b.color}" stroke-width="2" stroke-linejoin="round"/>`;
+    // Vertex dots
+    b.values.forEach((v, i) => {
+      const { x, y } = polar(angleFor(i), (v / MAX_VAL) * R);
+      svg.innerHTML += `<circle cx="${x}" cy="${y}" r="3" fill="${b.color}" stroke="#0a0e1a" stroke-width="1.5"/>`;
+    });
+  });
+
+  // Center dot
+  svg.innerHTML += `<circle cx="${CX}" cy="${CY}" r="2.5" fill="#334155"/>`;
+
+  // Tooltip
+  if (hoveredAxis !== null) {
+    const i = hoveredAxis;
+    const angle = angleFor(i);
+    const labelPos = polar(angle, R + 26);
+
+    const entries = Object.entries(BUCKETS).filter(([k]) => visible[k]);
+    const boxW = 108, lineH = 16, pad = 10;
+    const boxH = pad + entries.length * lineH + 4;
+
+    // Position tooltip away from center
+    let tx = labelPos.x, ty = labelPos.y;
+    if (ty < CY) ty -= boxH + 8; else ty += 8;
+    if (tx > CX + 40) tx -= boxW;
+    else if (tx < CX - 40) tx = tx;
+    else tx -= boxW / 2;
+
+    svg.innerHTML += `<rect x="${tx}" y="${ty}" width="${boxW}" height="${boxH}" rx="6" class="tooltip-box"/>`;
+    entries.forEach(([key, b], idx) => {
+      const dotX = tx + 10, dotY = ty + pad + idx * lineH + 5;
+      svg.innerHTML += `<circle cx="${dotX}" cy="${dotY}" r="4" fill="${b.color}"/>`;
+      svg.innerHTML += `<text x="${dotX + 12}" y="${dotY + 4}" class="tooltip-label">${b.label}: ${b.values[i]}</text>`;
+    });
+  }
+
+  // ─── Event listeners ─────────────────────────────────────────────────────
+  svg.querySelectorAll(".axis-hit, .axis-label").forEach((el) => {
+    const idx = parseInt(el.dataset.axis);
+    el.addEventListener("mouseenter", () => { hoveredAxis = idx; render(); });
+    el.addEventListener("mouseleave", () => { hoveredAxis = null; render(); });
+  });
+}
+
+// ─── Toggle buttons ────────────────────────────────────────────────────────
+const toggles = document.getElementById("toggles");
+Object.entries(BUCKETS).forEach(([key, b]) => {
+  const btn = document.createElement("button");
+  btn.className = "toggle-btn active";
+  btn.style.setProperty("--col", b.color);
+  btn.innerHTML = `<span class="dot"></span>${b.label}`;
+  btn.addEventListener("click", () => {
+    visible[key] = !visible[key];
+    btn.classList.toggle("active", visible[key]);
+    render();
+  });
+  toggles.appendChild(btn);
+});
+
+// ─── Init ──────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
